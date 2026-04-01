@@ -6,16 +6,23 @@
 //
 
 import SwiftUI
+import ImagePlayground
 
 struct KitchenView: View {
     @Environment(AppManager.self) private var appManager
     
     var body: some View {
+        @Bindable var appManager = appManager
         VStack(spacing: 16) {
             Text("Refine Your Dish")
                 .font(.largeTitle.weight(.semibold))
             
             imageArea
+            
+            ImageButtonsView()
+            
+            IngredientListView()
+            
             Spacer()
             
             if let error = appManager.error {
@@ -31,6 +38,17 @@ struct KitchenView: View {
                 }
             }
         }
+        .imagePlaygroundSheet(
+            isPresented: $appManager.showPlayground,
+            concepts: appManager.imageGenerator.concepts,
+            sourceImage: appManager.currentImage.map(Image.init),
+            onCompletion: { url in
+                if let data = try? Data(contentsOf: url),
+                   let nsImage = NSImage(data: data) {
+                    appManager.currentImage = nsImage
+                }
+            }
+        )
     }
     
     private var imageArea: some View {
@@ -51,5 +69,5 @@ struct KitchenView: View {
 
 #Preview {
     KitchenView()
-        .previewEnvironment(generateImage: true)
+        .previewEnvironment()
 }

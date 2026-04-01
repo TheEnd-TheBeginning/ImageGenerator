@@ -16,5 +16,11 @@ struct ImageGeneratorApp: App {
             ContentView()
                 .environment(appManager)
         }
+        .commands {
+            CommandMenu("Actions") {
+                ImageButtonsView(displayForMenu: true)
+                    .environment(appManager)
+            }
+        }
     }
 }

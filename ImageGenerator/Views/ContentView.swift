@@ -12,14 +12,17 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            if let image = appManager.currentImage {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+            if appManager.showKitchen {
+                KitchenView()
             } else {
                 StartView()
             }
         }
+        .frame(
+            minWidth: ImageGenerator.imageSize,
+            maxWidth: 400,
+            maxHeight: 550
+        )
         .overlay {
             if appManager.isGenerating {
                 loadingView()
@@ -39,5 +42,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .previewEnvironment()
+        .previewEnvironment(generateImage: true)
 }

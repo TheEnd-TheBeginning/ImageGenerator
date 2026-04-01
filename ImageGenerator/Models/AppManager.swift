@@ -9,26 +9,33 @@ import SwiftUI
 import ImagePlayground
 
 @Observable
-@MainActor
 class AppManager {
     let imageGenerator = ImageGenerator()
     var currentImage: NSImage?
+    var showPlayground: Bool = false
     
     private(set) var error: Error?
     private(set) var isGenerating = false
+    private var task: Task<Void, Never>?
     
     func generateImage() {
         error = nil
         isGenerating = true
+        task?.cancel()
         
-        Task {
+        task = Task {
             do {
                 let generatedImage = try await imageGenerator.generate()
                 currentImage = NSImage(cgImage: generatedImage.cgImage, size: .zero)
                 isGenerating = false
             } catch {
-                self.error = error
-                isGenerating = false
+                do {
+                    try Task.checkCancellation()
+                    self.error = error
+                    isGenerating = false
+                } catch {
+                    // Task cancelled
+                }
             }
         }
     }
@@ -43,15 +50,28 @@ class AppManager {
     var showKitchen: Bool {
         currentImage != nil || isGenerating
     }
+    
+    func add(ingredient: String) {
+        imageGenerator.ingredients.append(ingredient)
+        generateImage()
+    }
+    
+    func remove(ingredient: String) {
+        if let index = imageGenerator.ingredients.firstIndex(where: { $0 == ingredient }) {
+            imageGenerator.ingredients.remove(at: index)
+        }
+        generateImage()
+    }
 }
 
 extension View {
     func previewEnvironment(generateImage: Bool = false) -> some View {
         let appManager = AppManager()
+        appManager.imageGenerator.ingredients.append("Strawberry")
         return environment(appManager)
             .onAppear {
                 if generateImage {
-                    appManager.imageGenerator.style = .sketch
+                    appManager.imageGenerator.style = .animation
                     appManager.generateImage()
                 }
             }
