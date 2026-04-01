@@ -7,17 +7,23 @@
 
 import Foundation
 import ImagePlayground
+import SwiftUI
 
 @Observable
 class ImageGenerator {
     var recipe = ImageGenerator.defaultRecipe
     var style: ImagePlaygroundStyle?
     var ingredients: [String] = []
+    var initImage: NSImage?
     
     var concepts: [ImagePlaygroundConcept] {
         var playgroundConcepts = [ImagePlaygroundConcept.text(recipe)]
         for ingridient in ingredients {
             playgroundConcepts.append(.text(ingridient))
+        }
+        
+        if let initImage = initImage?.cgImage(forProposedRect: nil, context: nil, hints: nil) {
+            playgroundConcepts.append(.image(initImage))
         }
         return playgroundConcepts
     }
@@ -38,6 +44,7 @@ class ImageGenerator {
     func resetGenerator() {
         recipe = ImageGenerator.defaultRecipe
         style = nil
+        initImage = nil
         ingredients.removeAll()
     }
 }

@@ -37,6 +37,9 @@ struct StartView: View {
                 }
             }
             
+            PhotoPickerView()
+                .padding(.top, 8)
+            
             Spacer()
         }
         .toolbar {

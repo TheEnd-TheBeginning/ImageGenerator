@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ImagePlayground
+import PhotosUI
 
 @Observable
 class AppManager {
@@ -17,6 +18,7 @@ class AppManager {
     private(set) var error: Error?
     private(set) var isGenerating = false
     private var task: Task<Void, Never>?
+    private var initImageTask: Task<Void, Never>?
     
     func generateImage() {
         error = nil
@@ -45,6 +47,8 @@ class AppManager {
         currentImage = nil
         error = nil
         isGenerating = false
+        task?.cancel()
+        initImageTask?.cancel()
     }
     
     var showKitchen: Bool {
@@ -54,6 +58,22 @@ class AppManager {
     func add(ingredient: String) {
         imageGenerator.ingredients.append(ingredient)
         generateImage()
+    }
+    
+    
+    func setInitImage(initImage: PhotosPickerItem?) {
+        guard let initImage else { return }
+        initImageTask?.cancel()
+        
+        initImageTask = Task {
+            if let imageData = try? await initImage.loadTransferable(type: Data.self) {
+                imageGenerator.initImage = NSImage(data: imageData)
+            }
+        }
+    }
+    
+    func removeInitImage() {
+        imageGenerator.initImage = nil
     }
     
     func remove(ingredient: String) {
