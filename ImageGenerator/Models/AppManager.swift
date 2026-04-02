@@ -17,6 +17,7 @@ class AppManager {
     
     private(set) var error: Error?
     private(set) var isGenerating = false
+    private(set) var isInitImageLoading = false
     private var task: Task<Void, Never>?
     private var initImageTask: Task<Void, Never>?
     
@@ -49,6 +50,7 @@ class AppManager {
         isGenerating = false
         task?.cancel()
         initImageTask?.cancel()
+        isInitImageLoading = false
     }
     
     var showKitchen: Bool {
@@ -63,11 +65,17 @@ class AppManager {
     
     func setInitImage(initImage: PhotosPickerItem?) {
         guard let initImage else { return }
+        isInitImageLoading = true
         initImageTask?.cancel()
         
         initImageTask = Task {
-            if let imageData = try? await initImage.loadTransferable(type: Data.self) {
-                imageGenerator.initImage = NSImage(data: imageData)
+            do {
+                if let imageData = try await initImage.loadTransferable(type: Data.self) {
+                    imageGenerator.initImage = NSImage(data: imageData)
+                }
+                isInitImageLoading = false
+            } catch {
+                isInitImageLoading = false
             }
         }
     }

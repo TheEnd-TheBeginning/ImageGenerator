@@ -37,7 +37,7 @@ struct StartView: View {
                 }
             }
             
-            PhotoPickerView()
+            InitImageView()
                 .padding(.top, 8)
             
             Spacer()
